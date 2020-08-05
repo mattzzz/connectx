@@ -59,8 +59,9 @@ def my_agent(obs, config):
     # Uses minimax to calculate value of dropping piece in selected column
     def score_move(grid, col, mark, config, nsteps):
         next_grid = drop_piece(grid, col, mark, config)
-        # score = minimax(next_grid, nsteps-1, False, mark, config)
-        score = minimax_ab(next_grid, nsteps-1, -np.Inf, np.Inf, False, mark, config)
+        # score = negamax(next_grid, nsteps-1, False, mark, config)
+        score = negamax_ab(next_grid, nsteps-1, -np.Inf, np.Inf, False, mark, config)
+        # print(score, score2)
         return score
 
     # Helper function for minimax: checks if agent or opponent has four in a row in the window
@@ -99,50 +100,35 @@ def my_agent(obs, config):
                     return True
         return False
 
-    # Minimax implementation
-    def minimax(node, depth, maximizingPlayer, mark, config):
+    # Negamax implementation
+    def negamax(node, depth, maximizingPlayer, mark, config):
         is_terminal = is_terminal_node(node, config)
         valid_moves = [c for c in range(config.columns) if node[0][c] == 0]
         if depth == 0 or is_terminal:
             return get_heuristic(node, mark, config)
-        if maximizingPlayer:
-            value = -np.Inf
-            for col in valid_moves:
-                child = drop_piece(node, col, mark, config)
-                value = max(value, minimax(child, depth-1, False, mark, config))
-            return value
-        else:
-            value = np.Inf
-            for col in valid_moves:
-                child = drop_piece(node, col, mark%2+1, config)
-                value = min(value, minimax(child, depth-1, True, mark, config))
-            return value
 
+        value = -np.Inf
+        for col in valid_moves:
+            child = drop_piece(node, col, mark if maximizingPlayer else mark%2+1, config)
+            value = max(value, -negamax(child, depth-1, not maximizingPlayer, mark, config))
+        return -value
 
-    # Minimax implementation with alpha/beta pruning
-    def minimax_ab(node, depth, a, b, maximizingPlayer, mark, config):
+    # Negamax implementation with alpha/beta pruning
+    def negamax_ab(node, depth, a, b, maximizingPlayer, mark, config):
         is_terminal = is_terminal_node(node, config)
         valid_moves = [c for c in range(config.columns) if node[0][c] == 0]
         if depth == 0 or is_terminal:
             return get_heuristic(node, mark, config)
-        if maximizingPlayer:
-            value = -np.Inf
-            for col in valid_moves:
-                child = drop_piece(node, col, mark, config)
-                value = max(value, minimax_ab(child, depth-1, a, b, False, mark, config))
-                a = max(a, value)
-                if a >= b:
-                    break
-            return value
-        else:
-            value = np.Inf
-            for col in valid_moves:
-                child = drop_piece(node, col, mark%2+1, config)
-                value = min(value, minimax_ab(child, depth-1, a, b, True, mark, config))
-                b = min(b, value)
-                if b <= a:
-                    break
-            return value
+
+        value = -np.Inf
+        for col in valid_moves:
+            child = drop_piece(node, col, mark if maximizingPlayer else mark%2+1, config)
+            value = max(value, -negamax_ab(child, depth-1, -b, -a, not maximizingPlayer, mark, config))
+            a = max(a, value)
+            if a >= b:
+                break
+        return -value        
+
 
 
     #########################
@@ -151,7 +137,7 @@ def my_agent(obs, config):
     # import time
     # start = time.clock()
 
-    N_STEPS = 2
+    N_STEPS = 3
 
     # Get list of valid moves
     valid_moves = [c for c in range(config.columns) if obs.board[c] == 0]
