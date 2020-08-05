@@ -1,4 +1,4 @@
-def my_agent(obs, config):
+def agent(obs, config):
     # Your code here: Amend the agent!
     import numpy as np
     import random

@@ -1,2 +1,6 @@
 numpy
 kaggle_environments
+stable_baselines
+requests
+mpi4py
+matplotlib

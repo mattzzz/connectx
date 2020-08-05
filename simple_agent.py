@@ -1,4 +1,4 @@
-def my_agent(obs, config):
+def agent(obs, config):
     import numpy as np
 
     # Gets board at next step if agent drops piece in selected column
